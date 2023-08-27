@@ -24,5 +24,5 @@ sed -i 's/DOMAIN/Enter domain this/g' /etc/nginx/sites-available/SITE*; sed -i '
 ```
 ### FOR PHP-FPM CONFIG
 ```
-sed -i 's/DOMAIN/g.qdevis.by/g' /etc/nginx/conf.d/gameap.conf; sed -i "s/VER/$(dpkg -l | grep fpm | awk {'print $2'})/g" /etc/nginx/conf.d/gameap.conf; sed -i 's/ROOTPATH/\/var\/www\/gameap/g' /etc/nginx/conf.d/gameap.conf
+sed -i 's/DOMAIN/g.qdevis.by/g' /etc/nginx/conf.d/SITE*; sed -i "s/VER/$(dpkg -l | grep fpm | awk {'print $2'})/g" /etc/nginx/conf.d/SITE*; sed -i 's/ROOTPATH/Enter this path to site/g' /etc/nginx/conf.d/SITE*
 ```
