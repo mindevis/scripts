@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   percona:
-    image: percona:ps-5.7
+    image: percona:ps-MYSQLVERSION
     container_name: percona
     hostname: percona
     command: --innodb_strict_mode=0 --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
@@ -13,7 +13,7 @@ services:
       - MYSQL_DATABASE=MYSQLDATABASE
       - MYSQL_USER=MYSQLUSER
       - MYSQL_PASSWORD=MYSQLPASSWORD
-      - TZ=Europe/Moscow
+      - TZ=Europe/Minsk
     restart: always
     networks:
       percona-network:
