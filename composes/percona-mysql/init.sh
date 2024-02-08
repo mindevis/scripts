@@ -23,6 +23,10 @@ MYSQL_DATABASE=$(echo -e "percona_db_$($OPENSSL rand -hex 2)")
 MYSQL_USER=$(echo -e "percona_usr_$($OPENSSL rand -hex 2)")
 MYSQL_PASSWORD=$($OPENSSL rand -hex 16)
 
+if [[ ! -f docker-compose.yml ]]; then
+    $(which wget) https://raw.githubusercontent.com/mindevis/scripts/main/composes/percona-mysql/docker-compose.yml
+fi
+
 echo -e "${WARN}Initialization database configuration for MySQL.${NORMAL}"
 echo -e "${WARN}Backup database configuration file.${NORMAL}"
 cp docker-compose.yml{,.bak}
