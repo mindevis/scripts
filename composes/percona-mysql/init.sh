@@ -32,14 +32,17 @@ function setup() {
 
     if [[ ! -f start.sh ]]; then
         $(which wget) https://raw.githubusercontent.com/mindevis/scripts/main/composes/percona-mysql/start.sh
+        $(which chmod) +x start.sh
     fi
 
     if [[ ! -f stop.sh ]]; then
         $(which wget) https://raw.githubusercontent.com/mindevis/scripts/main/composes/percona-mysql/stop.sh
+        $(which chmod) +x stop.sh
     fi
 
     if [[ ! -f restart.sh ]]; then
         $(which wget) https://raw.githubusercontent.com/mindevis/scripts/main/composes/percona-mysql/restart.sh
+        $(which chmod) +x restart.sh
     fi
 
     echo -e "${WARN}Initialization database configuration for MySQL.${NORMAL}"

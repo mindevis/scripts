@@ -15,6 +15,8 @@ services:
       - MYSQL_PASSWORD=MYSQLPASSWORD
       - TZ=Europe/Minsk
     restart: always
+    volumes:
+      - "percona-db-data:/var/lib/mysql"
     networks:
       percona-network:
         ipv4_address: 10.2.26.2
@@ -35,9 +37,17 @@ services:
     depends_on:
       - percona
     restart: always
+    volumes:
+      - "percona-pma-data:/etc/phpmyadmin"
     networks:
       percona-network:
         ipv4_address: 10.2.26.3
+
+volumes:
+  percona-db-data:
+    name: "percona-db-data"
+  percona-pma-data:
+    name: "percona-pma-data"
 
 networks:
   percona-network:
