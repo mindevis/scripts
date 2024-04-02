@@ -19,7 +19,7 @@ services:
       - "db-data:/var/lib/mysql"
     networks:
       mysql-network:
-        ipv4_address: DBCIDR
+        ipv4_address: DBNW
 
   phpmyadmin:
     image: phpmyadmin:latest
@@ -41,7 +41,7 @@ services:
       - "pma-data:/etc/phpmyadmin"
     networks:
       mysql-network:
-        ipv4_address: PMACIDR
+        ipv4_address: PMANW
 
 volumes:
   db-data:

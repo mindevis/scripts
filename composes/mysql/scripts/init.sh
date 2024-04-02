@@ -59,7 +59,7 @@ function setup() {
         echo -e "${WARN}Change default phpmyadmin exposed port.${NORMAL}"
         $(which sed) -i "s/PMAPORT/$PMA_PORT/g" docker-compose.yml
         $(which sed) -i "s/PACKAGE/$package:$mysqlVersion phpmyadmin:latest/g" manage.sh
-        $(which sed) -i "s/PMACIDR/$networkMainOctet.3/g" docker-compose.yml
+        $(which sed) -i "s/PMANW/$networkMainOctet.3/g" docker-compose.yml
     else
         $(which sed) -i "s/PACKAGE/$package:$mysqlVersion/g" manage.sh
     fi
@@ -75,7 +75,7 @@ function setup() {
 
     $(which sed) -i "s/CIDR/$networkWithoutMask\/$networkMask/g" docker-compose.yml
     $(which sed) -i "s/GW/$networkMainOctet.1/g" docker-compose.yml
-    $(which sed) -i "s/DBCIDR/$networkMainOctet.2/g" docker-compose.yml
+    $(which sed) -i "s/DBNW/$networkMainOctet.2/g" docker-compose.yml
 
     echo -e "${WARN}Start MySQL environment.${NORMAL}"
     $(which docker) compose up -d
