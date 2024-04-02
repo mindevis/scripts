@@ -30,7 +30,7 @@ services:
     ports:
       - 'PMAPORT:80'
     environment:
-      - PMA_HOST=DBCIDR
+      - PMA_HOST=DBNW
       - PMA_PORT=3306
       - HIDE_PHP_VERSION=true
       - TZ=Europe/Minsk
