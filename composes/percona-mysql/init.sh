@@ -79,6 +79,41 @@ function setup() {
     rm -f "$0"
 }
 
+function checking() {
+    OS=$($(which lsb_release) -is | grep -v LSB)
+    if [[ ! $OS = "Debian" ]]; then
+        echo -e "${BAD}Sorry, this script only works with Debian Linux.\nIf you need support for another Linux distribution, please submit a support request\nIssue: https://github.com/mindevis/scripts/issues/new${NORMAL}"
+        exit 1
+    fi
+
+    OSSL=$($(which dpkg) -l | $(which grep) -w " openssl " | $(which cut) -d " " -f1)
+    if [[ ! $OSSL = "ii" ]];then
+        echo -e "${BAD}Openssl not found, openssl needed for generate passwords, install this package manually.${NORMAL}"
+        exit 1
+    fi
+
+    WG=$($(which dpkg) -l | $(which grep) -w " wget " | $(which cut) -d " " -f1)
+    if [[ ! $WG = "ii" ]];then
+        echo -e "${BAD}Wget not found, wget needed for downloading scripts from github, install this package manually.${NORMAL}"
+        exit 1
+    fi
+
+    DC=$($(which dpkg) -l | $(which grep) -w " docker-ce " | $(which cut) -d " " -f1)
+    if [[ ! $DC = "ii" ]];then
+        echo -e "${BAD}Docker Engine not found, docker engine needed for run applications in containers, install this package manually.${NORMAL}"
+        exit 1
+    fi
+
+    DCC=$($(which dpkg) -l | $(which grep) -w " docker-compose-plugin " | $(which cut) -d " " -f1)
+    if [[ ! $DCC = "ii" ]];then
+        echo -e "${BAD}Docker Compose plugin not found, docker compose plugin needed for run compose files, install this package manually.${NORMAL}"
+        exit 1
+    fi
+
+    $(which touch) $LOCK_FILE
+    setup
+}
+
 # Entrypoint to script
 case "$1" in
     --setup)
@@ -106,16 +141,15 @@ case "$1" in
 
         if [[ $(echo "$pmaEnable" | $(which tr) '[:lower:]' '[:upper:]') = "TRUE" ]]; then
             if [[ -z $mysqlVersion ]] || [[ -z $mysqlPort ]] || [[ -z $pmaPort ]]; then
-                echo -e "${WARN}You have not specified all required arguments.${NORMAL}"
+                echo -e "${BAD}You have not specified all required arguments.${NORMAL}"
                 exit 1
             fi
         else
             if [[ -z $mysqlVersion ]] || [[ -z $mysqlPort ]]; then
-                echo -e "${WARN}You have not specified all required arguments.${NORMAL}"
+                echo -e "${BAD}You have not specified all required arguments.${NORMAL}"
                 exit 1
             fi
         fi
 
-        $(which touch) $LOCK_FILE
-        setup
+        checking
 esac
