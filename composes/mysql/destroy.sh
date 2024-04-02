@@ -7,5 +7,7 @@ else
     WARN=$'\e[0;33m'
 fi
 
-echo -e "${WARN}Stop MySQL environment.${NORMAL}"
+echo -e "${WARN}Destroy MySQL environment.${NORMAL}"
 $(which docker) compose stop
+$(which docker) compose rm -f -v
+$(which docker) compose rmi PACKAGE

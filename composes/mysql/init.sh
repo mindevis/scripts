@@ -52,22 +52,32 @@ function setup() {
         $(which chmod) +x restart.sh
     fi
 
+    if [[ ! -f destroy.sh ]]; then
+        $(which wget) https://raw.githubusercontent.com/mindevis/scripts/main/composes/mysql/destroy.sh
+        $(which chmod) +x destroy.sh
+    fi
+
+    if [[ $package = "percona" ]];then
+        mysqlVersion="ps-$mysqlVersion"
+    fi
+
     echo -e "${WARN}Initialization database configuration for MySQL.${NORMAL}"
     echo -e "${WARN}Backup database configuration file.${NORMAL}"
     $(which cp) docker-compose.yml{,.bak}
     echo -e "${WARN}Setup MySQL ${package}: ${mysqlVersion}.${NORMAL}"
     $(which sed) -i "s/PACKAGE/$package/g" docker-compose.yml
-    if [[ $package = "percona" ]];then
-        $(which sed) -i "s/MYSQLVERSION/ps-$mysqlVersion/g" docker-compose.yml
-    else
-        $(which sed) -i "s/MYSQLVERSION/$mysqlVersion/g" docker-compose.yml
-    fi
+    $(which sed) -i "s/MYSQLVERSION/$mysqlVersion/g" docker-compose.yml
     echo -e "${WARN}Change default MySQL exposed port.${NORMAL}"
     $(which sed) -i "s/MYSQLPORT/$MYSQL_PORT/g" docker-compose.yml
+
     if [[ $(echo "$pmaEnable" | $(which tr) '[:lower:]' '[:upper:]') = "TRUE" ]]; then
         echo -e "${WARN}Change default phpmyadmin exposed port.${NORMAL}"
         $(which sed) -i "s/PMAPORT/$PMA_PORT/g" docker-compose.yml
+        $(which sed) -i "s/PACKAGE/$package:$mysqlVersion phpmyadmin:latest/g" destroy.sh
+    else
+        $(which sed) -i "s/PACKAGE/$package:$mysqlVersion/g" destroy.sh
     fi
+
     echo -e "${WARN}Generate MySQL root password.${NORMAL}"
     $(which sed) -i "s/MYSQLROOTPASSWORD/$MYSQL_ROOT_PASSWORD/g" docker-compose.yml
     echo -e "${WARN}Generate MySQL database.${NORMAL}"
