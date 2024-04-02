@@ -1,11 +1,11 @@
 version: '3.8'
 
 services:
-  percona:
-    image: PACKAGE:ps-MYSQLVERSION
-    container_name: percona
-    hostname: percona
-    command: --innodb_strict_mode=0 --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+  db:
+    image: PACKAGE:MYSQLVERSION
+    container_name: db
+    hostname: db
+    command: --innodb_strict_mode=0 --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci --default_authentication_plugin=mysql_native_password
     ports:
       - 'MYSQLPORT:3306'
     environment:
@@ -16,18 +16,18 @@ services:
       - TZ=Europe/Minsk
     restart: always
     volumes:
-      - "percona-db-data:/var/lib/mysql"
+      - "db-data:/var/lib/mysql"
     networks:
-      percona-network:
+      mysql-network:
         ipv4_address: 10.2.26.2
 
 volumes:
-  percona-db-data:
-    name: "percona-db-data"
+  db-data:
+    name: "db-data"
 
 networks:
-  percona-network:
-    name: percona-network
+  mysql-network:
+    name: mysql-network
     enable_ipv6: false
     driver: bridge
     ipam:
