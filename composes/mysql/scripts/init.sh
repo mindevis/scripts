@@ -37,24 +37,9 @@ function setup() {
         fi
     fi
 
-    if [[ ! -f start.sh ]]; then
-        $(which wget) https://raw.githubusercontent.com/mindevis/scripts/main/composes/mysql/start.sh
-        $(which chmod) +x start.sh
-    fi
-
-    if [[ ! -f stop.sh ]]; then
-        $(which wget) https://raw.githubusercontent.com/mindevis/scripts/main/composes/mysql/stop.sh
-        $(which chmod) +x stop.sh
-    fi
-
-    if [[ ! -f restart.sh ]]; then
-        $(which wget) https://raw.githubusercontent.com/mindevis/scripts/main/composes/mysql/restart.sh
-        $(which chmod) +x restart.sh
-    fi
-
-    if [[ ! -f destroy.sh ]]; then
-        $(which wget) https://raw.githubusercontent.com/mindevis/scripts/main/composes/mysql/destroy.sh
-        $(which chmod) +x destroy.sh
+    if [[ ! -f manage.sh ]]; then
+        $(which wget) -O manage.sh https://raw.githubusercontent.com/mindevis/scripts/main/composes/mysql/scripts/manage.sh
+        $(which chmod) +x manage.sh
     fi
 
     if [[ $package = "percona" ]];then
@@ -73,9 +58,9 @@ function setup() {
     if [[ $(echo "$pmaEnable" | $(which tr) '[:lower:]' '[:upper:]') = "TRUE" ]]; then
         echo -e "${WARN}Change default phpmyadmin exposed port.${NORMAL}"
         $(which sed) -i "s/PMAPORT/$PMA_PORT/g" docker-compose.yml
-        $(which sed) -i "s/PACKAGE/$package:$mysqlVersion phpmyadmin:latest/g" destroy.sh
+        $(which sed) -i "s/PACKAGE/$package:$mysqlVersion phpmyadmin:latest/g" manage.sh
     else
-        $(which sed) -i "s/PACKAGE/$package:$mysqlVersion/g" destroy.sh
+        $(which sed) -i "s/PACKAGE/$package:$mysqlVersion/g" manage.sh
     fi
 
     echo -e "${WARN}Generate MySQL root password.${NORMAL}"
