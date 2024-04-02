@@ -1,4 +1,4 @@
-# How to use this percona-mysql docker compose file
+# How to use this mysql docker compose file
 ## For downloading this docker compose data usage command
 ```
 wget https://raw.githubusercontent.com/mindevis/scripts/main/composes/mysql/init.sh && chmod +x init.sh
