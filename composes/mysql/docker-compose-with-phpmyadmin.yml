@@ -1,10 +1,10 @@
 version: '3.8'
 
 services:
-  percona:
-    image: percona:ps-MYSQLVERSION
-    container_name: percona
-    hostname: percona
+  db:
+    image: PACKAGE:MYSQLVERSION
+    container_name: db
+    hostname: db
     command: --innodb_strict_mode=0 --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
     ports:
       - 'MYSQLPORT:3306'
@@ -16,9 +16,9 @@ services:
       - TZ=Europe/Minsk
     restart: always
     volumes:
-      - "percona-db-data:/var/lib/mysql"
+      - "db-data:/var/lib/mysql"
     networks:
-      percona-network:
+      mysql-network:
         ipv4_address: 10.2.26.2
 
   phpmyadmin:
@@ -26,7 +26,7 @@ services:
     container_name: phpmyadmin
     hostname: phpmyadmin
     links:
-      - "percona"
+      - "db"
     ports:
       - 'PMAPORT:80'
     environment:
@@ -35,23 +35,23 @@ services:
       - HIDE_PHP_VERSION=true
       - TZ=Europe/Minsk
     depends_on:
-      - percona
+      - db
     restart: always
     volumes:
-      - "percona-pma-data:/etc/phpmyadmin"
+      - "pma-data:/etc/phpmyadmin"
     networks:
-      percona-network:
+      mysql-network:
         ipv4_address: 10.2.26.3
 
 volumes:
-  percona-db-data:
-    name: "percona-db-data"
-  percona-pma-data:
-    name: "percona-pma-data"
+  db-data:
+    name: "db-data"
+  pma-data:
+    name: "pma-data"
 
 networks:
-  percona-network:
-    name: percona-network
+  mysql-network:
+    name: mysql-network
     enable_ipv6: false
     driver: bridge
     ipam:

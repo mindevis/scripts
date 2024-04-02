@@ -15,48 +15,53 @@ else
     BRACKET=${NORMAL}
 fi
 
-LOCK_FILE="/tmp/setup-percona-mysql.lock"
+LOCK_FILE="/tmp/setup-mysql.lock"
 
 function setup() {
     OPENSSL=$(which openssl)
     MYSQL_PORT=$mysqlPort
     MYSQL_ROOT_PASSWORD=$($OPENSSL rand -hex 16)
-    MYSQL_DATABASE=$(echo -e "percona_db_$($OPENSSL rand -hex 2)")
-    MYSQL_USER=$(echo -e "percona_usr_$($OPENSSL rand -hex 2)")
+    MYSQL_DATABASE=$(echo -e "db_$($OPENSSL rand -hex 4)")
+    MYSQL_USER=$(echo -e "usr_$($OPENSSL rand -hex 4)")
     MYSQL_PASSWORD=$($OPENSSL rand -hex 16)
 
     if [[ $(echo "$pmaEnable" | $(which tr) '[:lower:]' '[:upper:]') = "TRUE" ]]; then
         PMA_PORT=$pmaPort
 
         if [[ ! -f docker-compose.yml ]]; then
-            $(which wget) -O docker-compose.yml https://raw.githubusercontent.com/mindevis/scripts/main/composes/percona-mysql/docker-compose-with-phpmyadmin.yml
+            $(which wget) -O docker-compose.yml https://raw.githubusercontent.com/mindevis/scripts/main/composes/mysql/docker-compose-with-phpmyadmin.yml
         fi
     else
         if [[ ! -f docker-compose.yml ]]; then
-            $(which wget) -O docker-compose.yml https://raw.githubusercontent.com/mindevis/scripts/main/composes/percona-mysql/docker-compose-without-phpmyadmin.yml
+            $(which wget) -O docker-compose.yml https://raw.githubusercontent.com/mindevis/scripts/main/composes/mysql/docker-compose-without-phpmyadmin.yml
         fi
     fi
 
     if [[ ! -f start.sh ]]; then
-        $(which wget) https://raw.githubusercontent.com/mindevis/scripts/main/composes/percona-mysql/start.sh
+        $(which wget) https://raw.githubusercontent.com/mindevis/scripts/main/composes/mysql/start.sh
         $(which chmod) +x start.sh
     fi
 
     if [[ ! -f stop.sh ]]; then
-        $(which wget) https://raw.githubusercontent.com/mindevis/scripts/main/composes/percona-mysql/stop.sh
+        $(which wget) https://raw.githubusercontent.com/mindevis/scripts/main/composes/mysql/stop.sh
         $(which chmod) +x stop.sh
     fi
 
     if [[ ! -f restart.sh ]]; then
-        $(which wget) https://raw.githubusercontent.com/mindevis/scripts/main/composes/percona-mysql/restart.sh
+        $(which wget) https://raw.githubusercontent.com/mindevis/scripts/main/composes/mysql/restart.sh
         $(which chmod) +x restart.sh
     fi
 
     echo -e "${WARN}Initialization database configuration for MySQL.${NORMAL}"
     echo -e "${WARN}Backup database configuration file.${NORMAL}"
     $(which cp) docker-compose.yml{,.bak}
-    echo -e "${WARN}Setup MySQL version to ${mysqlVersion}.${NORMAL}"
-    $(which sed) -i "s/MYSQLVERSION/$mysqlVersion/g" docker-compose.yml
+    echo -e "${WARN}Setup MySQL ${package}: ${mysqlVersion}.${NORMAL}"
+    $(which sed) -i "s/PACKAGE/$package/g" docker-compose.yml
+    if [[ $package = "percona" ]];then
+        $(which sed) -i "s/MYSQLVERSION/ps-$mysqlVersion/g" docker-compose.yml
+    else
+        $(which sed) -i "s/MYSQLVERSION/$mysqlVersion/g" docker-compose.yml
+    fi
     echo -e "${WARN}Change default MySQL exposed port.${NORMAL}"
     $(which sed) -i "s/MYSQLPORT/$MYSQL_PORT/g" docker-compose.yml
     if [[ $(echo "$pmaEnable" | $(which tr) '[:lower:]' '[:upper:]') = "TRUE" ]]; then
@@ -72,7 +77,7 @@ function setup() {
     echo -e "${WARN}Generate MySQL user password.${NORMAL}"
     $(which sed) -i "s/MYSQLPASSWORD/$MYSQL_PASSWORD/g" docker-compose.yml
 
-    echo -e "${WARN}Start Percona MySQL environment.${NORMAL}"
+    echo -e "${WARN}Start MySQL environment.${NORMAL}"
     $(which docker) compose up -d
 
     rm -f "$LOCK_FILE"
@@ -119,6 +124,10 @@ case "$1" in
     --setup)
         count=1
         for arguments in "$@"; do
+            if [[ "$arguments" = "--package" ]]; then
+                package="$2"
+            fi
+
             if [[ "$arguments" = "--version" ]]; then
                 mysqlVersion="$2"
             fi
@@ -140,12 +149,12 @@ case "$1" in
         done
 
         if [[ $(echo "$pmaEnable" | $(which tr) '[:lower:]' '[:upper:]') = "TRUE" ]]; then
-            if [[ -z $mysqlVersion ]] || [[ -z $mysqlPort ]] || [[ -z $pmaPort ]]; then
+            if [[ -z $package ]] || [[ -z $mysqlVersion ]] || [[ -z $mysqlPort ]] || [[ -z $pmaPort ]]; then
                 echo -e "${BAD}You have not specified all required arguments.${NORMAL}"
                 exit 1
             fi
         else
-            if [[ -z $mysqlVersion ]] || [[ -z $mysqlPort ]]; then
+            if [[ -z $package ]] || [[ -z $mysqlVersion ]] || [[ -z $mysqlPort ]]; then
                 echo -e "${BAD}You have not specified all required arguments.${NORMAL}"
                 exit 1
             fi
