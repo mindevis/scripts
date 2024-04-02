@@ -20,14 +20,21 @@ LOCK_FILE="/tmp/setup-percona-mysql.lock"
 function setup() {
     OPENSSL=$(which openssl)
     MYSQL_PORT=$mysqlPort
-    PMA_PORT=$pmaPort
     MYSQL_ROOT_PASSWORD=$($OPENSSL rand -hex 16)
     MYSQL_DATABASE=$(echo -e "percona_db_$($OPENSSL rand -hex 2)")
     MYSQL_USER=$(echo -e "percona_usr_$($OPENSSL rand -hex 2)")
     MYSQL_PASSWORD=$($OPENSSL rand -hex 16)
 
-    if [[ ! -f docker-compose.yml ]]; then
-        $(which wget) https://raw.githubusercontent.com/mindevis/scripts/main/composes/percona-mysql/docker-compose.yml
+    if [[ $(echo "$pmaEnable" | $(which tr) '[:lower:]' '[:upper:]') = "TRUE" ]]; then
+        PMA_PORT=$pmaPort
+
+        if [[ ! -f docker-compose.yml ]]; then
+            $(which wget) -O docker-compose.yml https://raw.githubusercontent.com/mindevis/scripts/main/composes/percona-mysql/docker-compose-with-phpmyadmin.yml
+        fi
+    else
+        if [[ ! -f docker-compose.yml ]]; then
+            $(which wget) -O docker-compose.yml https://raw.githubusercontent.com/mindevis/scripts/main/composes/percona-mysql/docker-compose-without-phpmyadmin.yml
+        fi
     fi
 
     if [[ ! -f start.sh ]]; then
@@ -52,8 +59,10 @@ function setup() {
     $(which sed) -i "s/MYSQLVERSION/$mysqlVersion/g" docker-compose.yml
     echo -e "${WARN}Change default MySQL exposed port.${NORMAL}"
     $(which sed) -i "s/MYSQLPORT/$MYSQL_PORT/g" docker-compose.yml
-    echo -e "${WARN}Change default phpmyadmin exposed port.${NORMAL}"
-    $(which sed) -i "s/PMAPORT/$PMA_PORT/g" docker-compose.yml
+    if [[ $(echo "$pmaEnable" | $(which tr) '[:lower:]' '[:upper:]') = "TRUE" ]]; then
+        echo -e "${WARN}Change default phpmyadmin exposed port.${NORMAL}"
+        $(which sed) -i "s/PMAPORT/$PMA_PORT/g" docker-compose.yml
+    fi
     echo -e "${WARN}Generate MySQL root password.${NORMAL}"
     $(which sed) -i "s/MYSQLROOTPASSWORD/$MYSQL_ROOT_PASSWORD/g" docker-compose.yml
     echo -e "${WARN}Generate MySQL database.${NORMAL}"
@@ -83,6 +92,10 @@ case "$1" in
                 mysqlPort="$2"
             fi
 
+            if [[ "$arguments" = "--pma-enable" ]]; then
+                pmaEnable="$2"
+            fi
+
             if [[ "$arguments" = "--pma-port" ]]; then
                 pmaPort="$2"
             fi
@@ -91,11 +104,18 @@ case "$1" in
             shift
         done
 
-        if [[ -z $mysqlVersion ]] || [[ -z $mysqlPort ]] || [[ -z $pmaPort ]]; then
-            echo -e "${WARN}You have not specified all required arguments.${NORMAL}"
-            exit 1
+        if [[ $(echo "$pmaEnable" | $(which tr) '[:lower:]' '[:upper:]') = "TRUE" ]]; then
+            if [[ -z $mysqlVersion ]] || [[ -z $mysqlPort ]] || [[ -z $pmaPort ]]; then
+                echo -e "${WARN}You have not specified all required arguments.${NORMAL}"
+                exit 1
+            fi
         else
-            touch $LOCK_FILE
-            setup
+            if [[ -z $mysqlVersion ]] || [[ -z $mysqlPort ]]; then
+                echo -e "${WARN}You have not specified all required arguments.${NORMAL}"
+                exit 1
+            fi
         fi
+
+        $(which touch) $LOCK_FILE
+        setup
 esac
