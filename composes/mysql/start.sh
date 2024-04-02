@@ -7,5 +7,5 @@ else
     WARN=$'\e[0;33m'
 fi
 
-echo -e "${WARN}Start Percona MySQL environment.${NORMAL}"
+echo -e "${WARN}Start MySQL environment.${NORMAL}"
 $(which docker) compose up -d

@@ -7,5 +7,5 @@ else
     WARN=$'\e[0;33m'
 fi
 
-echo -e "${WARN}Stop Percona MySQL environment.${NORMAL}"
+echo -e "${WARN}Stop MySQL environment.${NORMAL}"
 $(which docker) compose down

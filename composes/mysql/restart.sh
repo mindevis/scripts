@@ -8,5 +8,5 @@ else
 fi
 
 
-echo -e "${WARN}Restart Percona MySQL environment.${NORMAL}"
+echo -e "${WARN}Restart MySQL environment.${NORMAL}"
 $(which docker) compose restart
