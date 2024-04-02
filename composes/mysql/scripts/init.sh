@@ -73,7 +73,7 @@ function setup() {
     echo -e "${WARN}Generate MySQL user password.${NORMAL}"
     $(which sed) -i "s/MYSQLPASSWORD/$MYSQL_PASSWORD/g" docker-compose.yml
 
-    $(which sed) -i "s/CIDR/$networkCIDR/g" docker-compose.yml
+    $(which sed) -i "s/CIDR/$networkWithoutMask\/$networkMask/g" docker-compose.yml
     $(which sed) -i "s/GW/$networkMainOctet.1/g" docker-compose.yml
     $(which sed) -i "s/DBCIDR/$networkMainOctet.2/g" docker-compose.yml
 
@@ -153,6 +153,7 @@ case "$1" in
         done
 
         networkCIDR="${networkCIDR:-"10.2.26.0/24"}"
+        networkMask="$(echo "$networkCIDR" | cut -d / -f2)"
         networkWithoutMask="$(echo "$networkCIDR" | cut -d / -f1)"
         networkMainOctet="$(echo "$networkWithoutMask" | cut -d. -f-3)"
 
