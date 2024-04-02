@@ -19,3 +19,7 @@ bash init.sh --setup --package percona --version 8.0 --mysql-port 3306 --pma-ena
 ```
 bash init.sh --setup --package percona --version 8.0 --mysql-port 3306 --pma-enable false --pma-port 80
 ```
+### If need setup docker network with custom CIDR usage 
+```
+--network 10.2.26.0./24
+```
