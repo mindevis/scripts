@@ -59,6 +59,7 @@ function setup() {
         echo -e "${WARN}Change default phpmyadmin exposed port.${NORMAL}"
         $(which sed) -i "s/PMAPORT/$PMA_PORT/g" docker-compose.yml
         $(which sed) -i "s/PACKAGE/$package:$mysqlVersion phpmyadmin:latest/g" manage.sh
+        $(which sed) -i "s/PMACIDR/$networkMainOctet.3/g" docker-compose.yml
     else
         $(which sed) -i "s/PACKAGE/$package:$mysqlVersion/g" manage.sh
     fi
@@ -71,6 +72,10 @@ function setup() {
     $(which sed) -i "s/MYSQLUSER/$MYSQL_USER/g" docker-compose.yml
     echo -e "${WARN}Generate MySQL user password.${NORMAL}"
     $(which sed) -i "s/MYSQLPASSWORD/$MYSQL_PASSWORD/g" docker-compose.yml
+
+    $(which sed) -i "s/CIDR/$networkCIDR/g" docker-compose.yml
+    $(which sed) -i "s/GW/$networkMainOctet.1/g" docker-compose.yml
+    $(which sed) -i "s/DBCIDR/$networkMainOctet.2/g" docker-compose.yml
 
     echo -e "${WARN}Start MySQL environment.${NORMAL}"
     $(which docker) compose up -d
@@ -127,6 +132,10 @@ case "$1" in
                 mysqlVersion="$2"
             fi
 
+            if [[ "$arguments" = "--network" ]]; then
+                networkCIDR="$2"
+            fi
+
             if [[ "$arguments" = "--mysql-port" ]]; then
                 mysqlPort="$2"
             fi
@@ -142,6 +151,10 @@ case "$1" in
             count=$(( "$count" + 1 ))
             shift
         done
+
+        networkCIDR="${networkCIDR:-"10.2.26.0/24"}"
+        networkWithoutMask="$(echo "$networkCIDR" | cut -d / -f1)"
+        networkMainOctet="$(echo "$networkWithoutMask" | cut -d. -f-3)"
 
         if [[ $(echo "$pmaEnable" | $(which tr) '[:lower:]' '[:upper:]') = "TRUE" ]]; then
             if [[ -z $package ]] || [[ -z $mysqlVersion ]] || [[ -z $mysqlPort ]] || [[ -z $pmaPort ]]; then

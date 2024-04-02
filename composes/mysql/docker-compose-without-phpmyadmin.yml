@@ -19,7 +19,7 @@ services:
       - "db-data:/var/lib/mysql"
     networks:
       mysql-network:
-        ipv4_address: 10.2.26.2
+        ipv4_address: DBCIDR
 
 volumes:
   db-data:
@@ -33,5 +33,5 @@ networks:
     ipam:
       driver: default
       config:
-        - subnet: 10.2.26.0/24
-          gateway: 10.2.26.1
+        - subnet: CIDR
+          gateway: GW
