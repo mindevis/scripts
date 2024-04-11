@@ -17,7 +17,7 @@ check_packages() {
 }
 
 if [[ ! $USER == root ]]; then
-    sudo apt install -y zsh curl wget neovim
+    sudo apt install -y zsh curl wget neovim git
     sudo chsh -s "$(which zsh)" "$USER"
 
     if [[ ! -d /home/$USER/.oh-my-zsh ]]; then
