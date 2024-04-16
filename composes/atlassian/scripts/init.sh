@@ -74,7 +74,7 @@ function setup() {
 
     $(which sed) -i "s/CIDR/$networkWithoutMask\/$networkMask/g" docker-compose.yml
     $(which sed) -i "s/GW/$networkMainOctet.1/g" docker-compose.yml
-    $(which sed) -i "s/DBNW/$networkMainOctet.2/g" docker-compose.yml
+    $(which sed) -i "s/ATLNW/$networkMainOctet.2/g" docker-compose.yml
 
     echo -e "${WARN}Start $package environment.${NORMAL}"
     $(which docker) compose up -d
