@@ -25,6 +25,14 @@ function setup() {
     MYSQL_USER=$(echo -e "usr_$($OPENSSL rand -hex 4)")
     MYSQL_PASSWORD=$($OPENSSL rand -hex 16)
 
+    if [[ ! -d agent ]]; then 
+         $(which mkdir) agent
+    fi
+
+    if [[ ! -f agent/atlassian-agent.bak ]]; then
+       $(which wget) -O agent/atlassian-agent.bak https://github.com/mindevis/scripts/raw/main/composes/atlassian/agent/atlassian-agent.bak
+    fi
+
     # if [[ $(echo "$pmaEnable" | $(which tr) '[:lower:]' '[:upper:]') = "TRUE" ]]; then
     #     PMA_PORT=$pmaPort
 
