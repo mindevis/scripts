@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  PACKAGE:
+    container_name: PACKAGE
+    depends_on:
+      - postgresql
+    image: atlassian/PACKAGE
+    volumes:
+      - PACKAGE_data:/var/atlassian/application-data/jira
+      - ./agent/atlassian-agent.bak:/atlassian-agent.jar:ro
+    ports:
+      - 'JIRAPORT:8080'
+    environment:
+      ATL_DB_DRIVER: 'org.postgresql.Driver'
+      ATL_DB_TYPE: 'postgres72'
+      ATL_JDBC_URL: 'jdbc:postgresql://db-PACKAGE:5432/PGDATABASE'
+      ATL_JDBC_PASSWORD: PGPASSWORD
+      ATL_JDBC_USER: 'PGUSER'
+      JAVA_OPTS: '-javaagent:/atlassian-agent.jar'
+      JVM_MINIMUM_MEMORY: 512m
+      JVM_MAXIMUM_MEMORY: 2048m
+    networks:
+      atlassian-network:
+        ipv4_address: ATLNW
+
+  postgresql:
+    container_name: postgresql
+    image: postgres:alpine3.18
+    volumes:
+      - postgresql_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: 'PGUSER'
+      POSTGRES_PASSWORD: 'PGPASSWORD'
+    networks:
+      atlassian-network:
+        ipv4_address: ATLPGNW
+        aliases:
+          - db-PACKAGE
+
+volumes:
+  PACKAGE_data:
+    external: false
+  postgresql_data:
+    external: false
+
+networks:
+  atlassian-network:
+    name: atlassian-network
+    enable_ipv6: false
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: CIDR
+          gateway: GW

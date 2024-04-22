@@ -15,15 +15,15 @@ else
     BRACKET=${NORMAL}
 fi
 
-LOCK_FILE="/tmp/setup-mysql.lock"
+LOCK_FILE="/tmp/setup-atlassian.lock"
 
 function setup() {
     OPENSSL=$(which openssl)
     ATL_PORT=$atlPort
-    MYSQL_ROOT_PASSWORD=$($OPENSSL rand -hex 16)
-    MYSQL_DATABASE=$(echo -e "db_$($OPENSSL rand -hex 4)")
-    MYSQL_USER=$(echo -e "usr_$($OPENSSL rand -hex 4)")
-    MYSQL_PASSWORD=$($OPENSSL rand -hex 16)
+    # MYSQL_ROOT_PASSWORD=$($OPENSSL rand -hex 16)
+    PG_DATABASE=$(echo -e "db_$($OPENSSL rand -hex 4)")
+    PG_USER=$(echo -e "usr_$($OPENSSL rand -hex 4)")
+    PG_PASSWORD=$($OPENSSL rand -hex 16)
 
     if [[ ! -d agent ]]; then 
          $(which mkdir) agent
@@ -33,17 +33,15 @@ function setup() {
        $(which wget) -O agent/atlassian-agent.bak https://github.com/mindevis/scripts/raw/main/composes/atlassian/agent/atlassian-agent.bak
     fi
 
-    # if [[ $(echo "$pmaEnable" | $(which tr) '[:lower:]' '[:upper:]') = "TRUE" ]]; then
-    #     PMA_PORT=$pmaPort
-
-    if [[ ! -f docker-compose.yml ]]; then
-        $(which wget) -O docker-compose.yml https://raw.githubusercontent.com/mindevis/scripts/main/composes/atlassian/jira-without-postgresql.yml
+    if [[ $(echo "$pgEnable" | $(which tr) '[:lower:]' '[:upper:]') = "TRUE" ]]; then
+        if [[ ! -f docker-compose.yml ]]; then
+            $(which wget) -O docker-compose.yml https://raw.githubusercontent.com/mindevis/scripts/main/composes/atlassian/jira-without-postgresql.yml
+        fi
+    else
+        if [[ ! -f docker-compose.yml ]]; then
+            $(which wget) -O docker-compose.yml https://raw.githubusercontent.com/mindevis/scripts/main/composes/atlassian/jira-with-postgresql.yml
+        fi
     fi
-    # else
-    #     if [[ ! -f docker-compose.yml ]]; then
-    #         $(which wget) -O docker-compose.yml https://raw.githubusercontent.com/mindevis/scripts/main/composes/atlassian/docker-compose-without-phpmyadmin.yml
-    #     fi
-    # fi
 
     if [[ ! -f manage.sh ]]; then
         $(which wget) -O manage.sh https://raw.githubusercontent.com/mindevis/scripts/main/composes/atlassian/scripts/manage.sh
@@ -74,15 +72,16 @@ function setup() {
     # echo -e "${WARN}Generate MySQL root password.${NORMAL}"
     # $(which sed) -i "s/MYSQLROOTPASSWORD/$MYSQL_ROOT_PASSWORD/g" docker-compose.yml
     # echo -e "${WARN}Generate MySQL database.${NORMAL}"
-    # $(which sed) -i "s/MYSQLDATABASE/$MYSQL_DATABASE/g" docker-compose.yml
+    $(which sed) -i "s/PGDATABASE/$PG_DATABASE/g" docker-compose.yml
     # echo -e "${WARN}Generate MySQL user.${NORMAL}"
-    # $(which sed) -i "s/MYSQLUSER/$MYSQL_USER/g" docker-compose.yml
+    $(which sed) -i "s/PGUSER/$PG_USER/g" docker-compose.yml
     # echo -e "${WARN}Generate MySQL user password.${NORMAL}"
-    # $(which sed) -i "s/MYSQLPASSWORD/$MYSQL_PASSWORD/g" docker-compose.yml
+    $(which sed) -i "s/PGPASSWORD/$PG_PASSWORD/g" docker-compose.yml
 
     $(which sed) -i "s/CIDR/$networkWithoutMask\/$networkMask/g" docker-compose.yml
     $(which sed) -i "s/GW/$networkMainOctet.1/g" docker-compose.yml
     $(which sed) -i "s/ATLNW/$networkMainOctet.2/g" docker-compose.yml
+    $(which sed) -i "s/ATLPGNW/$networkMainOctet.3/g" docker-compose.yml
 
     echo -e "${WARN}Start $package environment.${NORMAL}"
     $(which docker) compose up -d
@@ -147,9 +146,9 @@ case "$1" in
                 atlPort="$2"
             fi
 
-            # if [[ "$arguments" = "--pma-enable" ]]; then
-            #     pmaEnable="$2"
-            # fi
+            if [[ "$arguments" = "--pg-enable" ]]; then
+                pgEnable="$2"
+            fi
 
             # if [[ "$arguments" = "--pma-port" ]]; then
             #     pmaPort="$2"
