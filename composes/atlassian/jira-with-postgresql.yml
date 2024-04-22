@@ -10,7 +10,7 @@ services:
       - PACKAGE_data:/var/atlassian/application-data/jira
       - ./agent/atlassian-agent.bak:/atlassian-agent.jar:ro
     ports:
-      - 'JIRAPORT:8080'
+      - 'ATLPORT:8080'
     environment:
       ATL_DB_DRIVER: 'org.postgresql.Driver'
       ATL_DB_TYPE: 'postgres72'
