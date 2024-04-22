@@ -31,6 +31,7 @@ services:
       - postgresql_data:/var/lib/postgresql/data
     environment:
       POSTGRES_USER: 'PGUSER'
+      POSTGRES_DB: 'PGDATABASE'
       POSTGRES_PASSWORD: 'PGPASSWORD'
     networks:
       atlassian-network:
