@@ -35,11 +35,11 @@ function setup() {
 
     if [[ $(echo "$pgEnable" | $(which tr) '[:lower:]' '[:upper:]') = "TRUE" ]]; then
         if [[ ! -f docker-compose.yml ]]; then
-            $(which wget) -O docker-compose.yml https://raw.githubusercontent.com/mindevis/scripts/main/composes/atlassian/jira-without-postgresql.yml
+            $(which wget) -O docker-compose.yml https://raw.githubusercontent.com/mindevis/scripts/main/composes/atlassian/jira-with-postgresql.yml
         fi
     else
         if [[ ! -f docker-compose.yml ]]; then
-            $(which wget) -O docker-compose.yml https://raw.githubusercontent.com/mindevis/scripts/main/composes/atlassian/jira-with-postgresql.yml
+            $(which wget) -O docker-compose.yml https://raw.githubusercontent.com/mindevis/scripts/main/composes/atlassian/jira-without-postgresql.yml
         fi
     fi
 
