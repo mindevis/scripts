@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   mediawiki:
-    image: mediawiki:stable-fpm-alpine
+    image: mediawiki:latest
     restart: always
     ports:
       - 8230:80
