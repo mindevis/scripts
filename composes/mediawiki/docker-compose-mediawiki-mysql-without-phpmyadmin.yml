@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   mediawiki:
-    image: mediawiki:MWPACKAGE
+    image: mediawiki:MWBACKEND
     restart: always
     ports:
       MWPOPRTS

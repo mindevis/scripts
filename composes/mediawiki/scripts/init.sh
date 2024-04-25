@@ -67,7 +67,7 @@ function setup() {
     $(which sed) -i "s/MYSQLPASSWORD/$MYSQL_PASSWORD/g" docker-compose.yml
 
     echo -e "${WARN}Setup MediaWiki mediawiki: ${mediawikiPackage}.${NORMAL}"
-    $(which sed) -i "s/MWPACKAGE/$mediawikiPackage/g" docker-compose.yml
+    $(which sed) -i "s/MWBACKEND/$mediawikiPackage/g" docker-compose.yml
     $(which sed) -i "s/MWPOPRTS/$mediawikiPorts/g" docker-compose.yml
 
     if [[ $(echo "$pmaEnable" | $(which tr) '[:lower:]' '[:upper:]') = "TRUE" ]]; then
