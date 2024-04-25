@@ -46,6 +46,14 @@ function setup() {
         mysqlVersion="ps-$mysqlVersion"
     fi
 
+    if [[ $mediawiki = "fpm" ]];then
+        mediawikiPackage="stable-fpm-alpine"
+        mediawikiPorts="- 127.0.0.1:8230:9000"
+    else
+        mediawikiPackage="stable"
+        mediawikiPorts="- 127.0.0.1:8230:80"
+    fi
+
     echo -e "${WARN}Initialization database configuration for MySQL.${NORMAL}"
     echo -e "${WARN}Backup database configuration file.${NORMAL}"
     $(which cp) docker-compose.yml{,.bak}
@@ -54,6 +62,8 @@ function setup() {
     $(which sed) -i "s/MYSQLVERSION/$mysqlVersion/g" docker-compose.yml
     echo -e "${WARN}Change default MySQL exposed port.${NORMAL}"
     $(which sed) -i "s/MYSQLPORT/$MYSQL_PORT/g" docker-compose.yml
+    $(which sed) -i "s/MWPACKAGE/$mediawikiPackage/g" docker-compose.yml
+    $(which sed) -i "s/MWPOPRTS/$mediawikiPorts/g" docker-compose.yml
 
     if [[ $(echo "$pmaEnable" | $(which tr) '[:lower:]' '[:upper:]') = "TRUE" ]]; then
         echo -e "${WARN}Change default phpmyadmin exposed port.${NORMAL}"
@@ -125,6 +135,10 @@ case "$1" in
     --setup)
         count=1
         for arguments in "$@"; do
+            if [[ "$arguments" = "--mediawiki" ]]; then
+                mediawiki="$2"
+            fi
+
             if [[ "$arguments" = "--package" ]]; then
                 package="$2"
             fi
@@ -159,12 +173,12 @@ case "$1" in
         networkMainOctet="$(echo "$networkWithoutMask" | cut -d. -f-3)"
 
         if [[ $(echo "$pmaEnable" | $(which tr) '[:lower:]' '[:upper:]') = "TRUE" ]]; then
-            if [[ -z $package ]] || [[ -z $mysqlVersion ]] || [[ -z $mysqlPort ]] || [[ -z $pmaPort ]]; then
+            if [[ -z $mediawiki ]] || [[ -z $package ]] || [[ -z $mysqlVersion ]] || [[ -z $mysqlPort ]] || [[ -z $pmaPort ]]; then
                 echo -e "${BAD}You have not specified all required arguments.${NORMAL}"
                 exit 1
             fi
         else
-            if [[ -z $package ]] || [[ -z $mysqlVersion ]] || [[ -z $mysqlPort ]]; then
+            if [[ -z $mediawiki ]] || [[ -z $package ]] || [[ -z $mysqlVersion ]] || [[ -z $mysqlPort ]]; then
                 echo -e "${BAD}You have not specified all required arguments.${NORMAL}"
                 exit 1
             fi

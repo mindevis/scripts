@@ -2,10 +2,10 @@ version: '3.8'
 
 services:
   mediawiki:
-    image: mediawiki:latest
+    image: mediawiki:MWPACKAGE
     restart: always
     ports:
-      - 8230:80
+      MWPOPRTS
     links:
       - db
     volumes:
