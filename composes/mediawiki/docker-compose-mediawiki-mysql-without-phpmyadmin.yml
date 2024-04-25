@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  mediawiki:
+    image: mediawiki:1.41.1-fpm-alpine
+    restart: always
+    ports:
+      - 8230:80
+    links:
+      - db
+    volumes:
+      - 'mediawiki-data:/var/www/html'
+    networks:
+      mediawiki-network:
+        ipv4_address: DBMWNW
+  db:
+    image: PACKAGE:MYSQLVERSION
+    container_name: db
+    hostname: db
+    command: --innodb_strict_mode=0 --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci --default_authentication_plugin=mysql_native_password
+    ports:
+      - 'MYSQLPORT:3306'
+    environment:
+      - MYSQL_ROOT_PASSWORD=MYSQLROOTPASSWORD
+      - MYSQL_DATABASE=MYSQLDATABASE
+      - MYSQL_USER=MYSQLUSER
+      - MYSQL_PASSWORD=MYSQLPASSWORD
+      - TZ=Europe/Minsk
+    restart: always
+    volumes:
+      - "db-data:/var/lib/mysql"
+    networks:
+      mediawiki-network:
+        ipv4_address: DBNW
+
+volumes:
+  mediawiki-data:
+    name: "mediawiki-data"
+  db-data:
+    name: "db-data"
+
+networks:
+  mediawiki-network:
+    name: mediawiki-network
+    enable_ipv6: false
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: CIDR
+          gateway: GW
