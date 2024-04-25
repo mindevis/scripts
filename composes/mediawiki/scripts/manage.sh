@@ -8,25 +8,25 @@ else
 fi
 
 function start() {
-    echo -e "${WARN}Start MySQL environment.${NORMAL}"
+    echo -e "${WARN}Start MediaWiki environment.${NORMAL}"
     $(which docker) compose up -d
     exit 0
 }
 
 function stop() {
-    echo -e "${WARN}Stop MySQL environment.${NORMAL}"
+    echo -e "${WARN}Stop MediaWiki environment.${NORMAL}"
     $(which docker) compose stop
     exit 0
 }
 
 function restart() {
-    echo -e "${WARN}Restart MySQL environment.${NORMAL}"
+    echo -e "${WARN}Restart MediaWiki environment.${NORMAL}"
     $(which docker) compose restart
     exit 0
 }
 
 function destroy() {
-    echo -e "${WARN}Destroy MySQL environment.${NORMAL}"
+    echo -e "${WARN}Destroy MediaWiki environment.${NORMAL}"
     $(which docker) compose -f docker-compose.yml down
     $(which docker) volume rm --force db-data pma-data mediawiki-data
     $(which docker) volume prune --force

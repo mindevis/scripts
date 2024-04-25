@@ -54,14 +54,19 @@ function setup() {
         mediawikiPorts="- 127.0.0.1:8230:80"
     fi
 
-    echo -e "${WARN}Initialization database configuration for MySQL.${NORMAL}"
-    echo -e "${WARN}Backup database configuration file.${NORMAL}"
+    echo -e "${WARN}Initialization database and mediawiki configuration.${NORMAL}"
+    echo -e "${WARN}Backup docker-compose.yml configuration file.${NORMAL}"
     $(which cp) docker-compose.yml{,.bak}
     echo -e "${WARN}Setup MySQL ${package}: ${mysqlVersion}.${NORMAL}"
     $(which sed) -i "s/PACKAGE/$package/g" docker-compose.yml
     $(which sed) -i "s/MYSQLVERSION/$mysqlVersion/g" docker-compose.yml
-    echo -e "${WARN}Change default MySQL exposed port.${NORMAL}"
     $(which sed) -i "s/MYSQLPORT/$MYSQL_PORT/g" docker-compose.yml
+    $(which sed) -i "s/MYSQLROOTPASSWORD/$MYSQL_ROOT_PASSWORD/g" docker-compose.yml
+    $(which sed) -i "s/MYSQLDATABASE/$MYSQL_DATABASE/g" docker-compose.yml
+    $(which sed) -i "s/MYSQLUSER/$MYSQL_USER/g" docker-compose.yml
+    $(which sed) -i "s/MYSQLPASSWORD/$MYSQL_PASSWORD/g" docker-compose.yml
+
+    echo -e "${WARN}Setup MediaWiki mediawiki: ${mediawikiPackage}.${NORMAL}"
     $(which sed) -i "s/MWPACKAGE/$mediawikiPackage/g" docker-compose.yml
     $(which sed) -i "s/MWPOPRTS/$mediawikiPorts/g" docker-compose.yml
 
@@ -71,24 +76,16 @@ function setup() {
         $(which sed) -i "s/PACKAGE/$package:$mysqlVersion phpmyadmin:latest/g" manage.sh
         $(which sed) -i "s/PMANW/$networkMainOctet.3/g" docker-compose.yml
     else
-        $(which sed) -i "s/PACKAGE/$package:$mysqlVersion/g" manage.sh
+        $(which sed) -i "s/PACKAGE/$package:$mysqlVersion mediawiki:$mediawikiPackage/g" manage.sh
     fi
 
-    echo -e "${WARN}Generate MySQL root password.${NORMAL}"
-    $(which sed) -i "s/MYSQLROOTPASSWORD/$MYSQL_ROOT_PASSWORD/g" docker-compose.yml
-    echo -e "${WARN}Generate MySQL database.${NORMAL}"
-    $(which sed) -i "s/MYSQLDATABASE/$MYSQL_DATABASE/g" docker-compose.yml
-    echo -e "${WARN}Generate MySQL user.${NORMAL}"
-    $(which sed) -i "s/MYSQLUSER/$MYSQL_USER/g" docker-compose.yml
-    echo -e "${WARN}Generate MySQL user password.${NORMAL}"
-    $(which sed) -i "s/MYSQLPASSWORD/$MYSQL_PASSWORD/g" docker-compose.yml
-
+    echo -e "${WARN}Setup MediaWiki network configuration.${NORMAL}"
     $(which sed) -i "s/CIDR/$networkWithoutMask\/$networkMask/g" docker-compose.yml
     $(which sed) -i "s/GW/$networkMainOctet.1/g" docker-compose.yml
     $(which sed) -i "s/DBNW/$networkMainOctet.3/g" docker-compose.yml
     $(which sed) -i "s/DBMWNW/$networkMainOctet.2/g" docker-compose.yml
 
-    echo -e "${WARN}Start MySQL environment.${NORMAL}"
+    echo -e "${WARN}Start MediaWiki environment.${NORMAL}"
     $(which docker) compose up -d
 
     rm -f "$LOCK_FILE"
