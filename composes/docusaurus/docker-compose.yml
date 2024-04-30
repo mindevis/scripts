@@ -1,0 +1,26 @@
+services:
+  docusaurus:
+    build: .
+    container_name: docusaurus
+    ports:
+      - 127.0.0.1:DSPORT:3000
+    volumes:
+      - 'docusaurus-data:/app'
+    networks:
+      docusaurus-network:
+        ipv4_address: DSNW
+
+volumes:
+  docusaurus-data:
+    name: "docusaurus-data"
+
+networks:
+  docusaurus-network:
+    name: docusaurus-network
+    enable_ipv6: false
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: CIDR
+          gateway: GW
