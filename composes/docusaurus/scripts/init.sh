@@ -23,6 +23,10 @@ function setup() {
         $(which wget) -O docker-compose.yml https://raw.githubusercontent.com/mindevis/scripts/main/composes/docusaurus/docker-compose.yml
     fi
 
+    if [[ ! -f Dockerfile ]]; then
+        $(which wget) -O Dockerfile https://raw.githubusercontent.com/mindevis/scripts/main/composes/docusaurus/Dockerfile
+    fi
+
     if [[ ! -f manage.sh ]]; then
         $(which wget) -O manage.sh https://raw.githubusercontent.com/mindevis/scripts/main/composes/docusaurus/scripts/manage.sh
         $(which chmod) +x manage.sh
