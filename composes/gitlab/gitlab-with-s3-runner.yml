@@ -9,8 +9,8 @@ services:
           external_url 'https://DOMAIN'
           gitlab_rails['gitlab_shell_ssh_port'] = GSSHPORT
       ports:
-        - 'GHTTPPORT'
-        - 'GSSHPORT:22'
+        - "GHTTPPORT"
+        - "GSSHPORT:22"
       volumes:
         - PACKAGE_configs:/etc/gitlab
         - PACKAGE_logs:/var/log/gitlab

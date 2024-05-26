@@ -25,6 +25,8 @@ function setup() {
     # PG_DATABASE=$(echo -e "db_$($OPENSSL rand -hex 4)")
     # PG_USER=$(echo -e "usr_$($OPENSSL rand -hex 4)")
     # PG_PASSWORD=$($OPENSSL rand -hex 16)
+    s3_user=$(echo -e "usr_$($OPENSSL rand -hex 4)")
+    s3_passwd=$($OPENSSL rand -hex 16)
 
     # if [[ ! -d agent ]]; then 
     #      $(which mkdir) agent
@@ -66,7 +68,7 @@ function setup() {
     $(which sed) -i "s/GSSHPORT/$git_ssh_port/g" docker-compose.yml
     $(which sed) -i "s/GHTTPPORT/$git_http_port:80/g" docker-compose.yml
     if [[ ! -z $git_https_port ]];then
-        $(which sed) -i "s/$git_http_port:80\'/a - $git_https_port:443/g" docker-compose.yml
+        $(which sed) -i "s/- \"$git_http_port:80\"/a - $git_https_port:443/g" docker-compose.yml
     fi
 
     if [[ ! -z $s3_enable ]] && [[ $(echo "$s3_enable" | $(which tr) '[:lower:]' '[:upper:]') = "TRUE" ]]; then
@@ -109,6 +111,8 @@ function setup() {
 
     echo -e "${WARN}Start $package environment.${NORMAL}"
     $(which docker) compose up -d
+
+    echo -e "${WARN}S3 USER: $s3_user | S3 PASSWORD: $s3_passwd.${NORMAL}"
 
     rm -f "$LOCK_FILE"
     rm -f "$0"
