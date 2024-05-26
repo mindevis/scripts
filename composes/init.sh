@@ -60,9 +60,8 @@ function setup() {
     echo -e "${WARN}Setup ${package}.${NORMAL}"
     $(which sed) -i "s/PACKAGE/$package/g" docker-compose.yml
     if [[ $package == "gitlab" ]]; then
-        image="$package/$package-ce:latest"
+        $(which sed) -i "s/IMG/$package\/$package-ce:latest/g" docker-compose.yml
     fi
-    $(which sed) -i "s/IMG/$image/g" docker-compose.yml
     $(which sed) -i "s/DOMAIN/$domain/g" docker-compose.yml
     $(which sed) -i "s/GSSHPORT/$git_ssh_port/g" docker-compose.yml
     $(which sed) -i "s/GHTTPPORT/$git_http_port:80/g" docker-compose.yml
