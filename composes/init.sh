@@ -67,8 +67,10 @@ function setup() {
     $(which sed) -i "s/DOMAIN/$domain/g" docker-compose.yml
     $(which sed) -i "s/GSSHPORT/$git_ssh_port/g" docker-compose.yml
     $(which sed) -i "s/GHTTPPORT/$git_http_port:80/g" docker-compose.yml
-    if [[ ! -z $git_https_port ]];then
-        $(which sed) -i "s/- \"$git_http_port:80\"/a - $git_https_port:443/g" docker-compose.yml
+    if [[ -z $git_https_port ]];then
+        $(which sed) -i "/- \'GHTTPSPORT\'/d" docker-compose.yml
+    else
+        $(which sed) -i "s/GHTTPSPORT/$git_https_port:443/g" docker-compose.yml
     fi
 
     if [[ ! -z $s3_enable ]] && [[ $(echo "$s3_enable" | $(which tr) '[:lower:]' '[:upper:]') = "TRUE" ]]; then
