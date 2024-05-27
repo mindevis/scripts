@@ -94,7 +94,7 @@ function setup() {
     #     $(which sed) -i "s/PMANW/$networkMainOctet.3/g" docker-compose.yml
     # else
     if [[ $package == "gitlab" ]]; then
-        $(which sed) -i "s/PACKAGE/$package-ce:latest/g" manage.sh
+        $(which sed) -i "s/PACKAGE/$package\/$package-ce:latest/g" manage.sh
     else
         $(which sed) -i "s/PACKAGE/$package:latest/g" manage.sh
     fi

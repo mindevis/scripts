@@ -28,7 +28,7 @@ function restart() {
 function destroy() {
     echo -e "${WARN}Destroy GitLab environment.${NORMAL}"
     $(which docker) compose -f docker-compose.yml down
-    $(which docker) volume rm --force db-data pma-data
+    $(which docker) volume rm --force gitlab_configs gitlab_data gitlab_logs gitlab_runner_data s3_object_data
     $(which docker) volume prune --force
     $(which docker) rmi PACKAGE
     exit 0
