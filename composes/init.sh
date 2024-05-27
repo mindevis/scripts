@@ -25,8 +25,6 @@ function setup() {
     # PG_DATABASE=$(echo -e "db_$($OPENSSL rand -hex 4)")
     # PG_USER=$(echo -e "usr_$($OPENSSL rand -hex 4)")
     # PG_PASSWORD=$($OPENSSL rand -hex 16)
-    s3_user=$(echo -e "usr_$($OPENSSL rand -hex 4)")
-    s3_passwd=$($OPENSSL rand -hex 16)
 
     # if [[ ! -d agent ]]; then 
     #      $(which mkdir) agent
@@ -42,7 +40,11 @@ function setup() {
     #     fi
     # else
     if [[ ! -f docker-compose.yml ]]; then
-        $(which wget) -O docker-compose.yml https://raw.githubusercontent.com/mindevis/scripts/main/composes/gitlab/gitlab-with-s3-runner.yml
+        if [[ ! -z $s3_enable ]] && [[ -z $runner_enable ]] && [[ $(echo "$s3_enable" | $(which tr) '[:lower:]' '[:upper:]') = "TRUE" ]]; then
+            $(which wget) -O docker-compose.yml https://raw.githubusercontent.com/mindevis/scripts/main/composes/gitlab/gitlab-with-s3.yml
+        else
+            $(which wget) -O docker-compose.yml https://raw.githubusercontent.com/mindevis/scripts/main/composes/gitlab/gitlab-with-s3-runner.yml
+        fi
     fi
     # fi
 
@@ -73,7 +75,9 @@ function setup() {
         $(which sed) -i "s/GHTTPSPORT/$git_https_port:443/g" docker-compose.yml
     fi
 
-    if [[ ! -z $s3_enable ]] && [[ $(echo "$s3_enable" | $(which tr) '[:lower:]' '[:upper:]') = "TRUE" ]]; then
+    if [[ ! -z $s3_enable ]] && [[ -z $runner_enable ]] && [[ $(echo "$s3_enable" | $(which tr) '[:lower:]' '[:upper:]') = "TRUE" ]]; then
+        s3_user=$(echo -e "usr_$($OPENSSL rand -hex 4)")
+        s3_passwd=$($OPENSSL rand -hex 16)
         $(which sed) -i "s/S3USER/$s3_user/g" docker-compose.yml
         $(which sed) -i "s/S3PASSWD/$s3_passwd/g" docker-compose.yml
         $(which sed) -i "s/S3WEBPORT/$s3_web_port/g" docker-compose.yml
@@ -109,7 +113,9 @@ function setup() {
     $(which sed) -i "s/GW/$networkMainOctet.1/g" docker-compose.yml
     $(which sed) -i "s/CONT1/$networkMainOctet.2/g" docker-compose.yml
     $(which sed) -i "s/CONT2/$networkMainOctet.3/g" docker-compose.yml
-    $(which sed) -i "s/CONT3/$networkMainOctet.4/g" docker-compose.yml
+    if [[ ! -z $s3_enable ]] && [[ -z $runner_enable ]] && [[ $(echo "$s3_enable" | $(which tr) '[:lower:]' '[:upper:]') = "TRUE" ]]; then
+        $(which sed) -i "s/CONT3/$networkMainOctet.4/g" docker-compose.yml
+    fi
 
     echo -e "${WARN}Start $package environment.${NORMAL}"
     $(which docker) compose up -d
@@ -184,7 +190,11 @@ case "$1" in
 
             if [[ "$arguments" = "--with-s3" ]]; then
                 s3_enable="$2"
-            fi 
+            fi
+
+            if [[ "$arguments" = "--with-runner" ]]; then
+                runner_enable="$2"
+            fi  
 
             if [[ "$arguments" = "--s3-web-port" ]]; then
                 s3_web_port="$2"
@@ -222,6 +232,16 @@ case "$1" in
         networkMask="$(echo "$networkCIDR" | cut -d / -f2)"
         networkWithoutMask="$(echo "$networkCIDR" | cut -d / -f1)"
         networkMainOctet="$(echo "$networkWithoutMask" | cut -d. -f-3)"
+        
+        if [[ -z $package ]]; then
+            echo -e "${BAD}You have not specified all required arguments.${NORMAL}"
+            exit 1
+        elif [[ -z $runner_enable ]] || [[ $(echo "$runner_enable" | $(which tr) '[:lower:]' '[:upper:]') = "FALSE" ]] && [[ ! -z $s3_enable ]] && [[ $(echo "$s3_enable" | $(which tr) '[:lower:]' '[:upper:]') = "TRUE" ]]; then
+            if [[ -z $s3_web_port ]] || [[ -z $s3_console_port ]]; then
+                echo -e "${BAD}You have not specified all required arguments.${NORMAL}"
+                exit 1
+            fi
+        fi
 
         # if [[ $(echo "$pmaEnable" | $(which tr) '[:lower:]' '[:upper:]') = "TRUE" ]]; then
         #     if [[ -z $package ]] || [[ -z $mysqlVersion ]] || [[ -z $atlPort ]] || [[ -z $pmaPort ]]; then
@@ -229,10 +249,6 @@ case "$1" in
         #         exit 1
         #     fi
         # else
-        if [[ -z $package ]]; then
-            echo -e "${BAD}You have not specified all required arguments.${NORMAL}"
-            exit 1
-        fi
         # fi
 
         checking

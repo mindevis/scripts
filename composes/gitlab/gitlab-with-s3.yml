@@ -1,0 +1,63 @@
+services:
+  PACKAGE:
+      image: IMG
+      container_name: PACKAGE
+      hostname: DOMAIN
+      restart: always
+      environment:
+        GITLAB_OMNIBUS_CONFIG: |
+          external_url 'https://DOMAIN'
+          gitlab_rails['gitlab_shell_ssh_port'] = GSSHPORT
+      ports:
+        - 'GHTTPPORT'
+        - 'GHTTPSPORT'
+        - 'GSSHPORT:22'
+      volumes:
+        - PACKAGE_configs:/etc/gitlab
+        - PACKAGE_logs:/var/log/gitlab
+        - PACKAGE_data:/var/opt/gitlab
+      shm_size: '256m'
+      networks:
+        PACKAGE-network:
+          ipv4_address: CONT1
+
+  minio:
+    image: quay.io/minio/minio:latest
+    container_name: minio
+    hostname: minio
+    restart: always
+    volumes:
+      - s3_object_data:/data
+    ports:
+      - 'S3WEBPORT:9000'
+      - 'S3CONSOLEPORT:9001'
+    environment:
+      MINIO_ROOT_USER: 'S3USER'
+      MINIO_ROOT_PASSWORD: 'S3PASSWD'
+      MINIO_ADDRESS: ':9000'
+      MINIO_CONSOLE_ADDRESS: ':9001'
+    command: minio server /data
+    networks:
+        PACKAGE-network:
+          ipv4_address: CONT2
+
+volumes:
+  PACKAGE_data:
+    external: false
+  PACKAGE_configs:
+    external: false
+  PACKAGE_logs:
+    external: false
+  s3_object_data:
+    external: false
+
+networks:
+  PACKAGE-network:
+    name: PACKAGE-network
+    enable_ipv6: false
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: CIDR
+          gateway: GW
