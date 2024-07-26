@@ -91,7 +91,7 @@ function setup() {
     #     $(which sed) -i "s/PACKAGE/$package:latest pgadmin:latest/g" manage.sh
     #     $(which sed) -i "s/PMANW/$networkMainOctet.3/g" docker-compose.yml
     # else
-    $(which sed) -i "s/PACKAGE/$package:latest/g" manage.sh
+    $(which sed) -i "s/PACKAGE/$package\/$package:latest/g" manage.sh
     # fi
 
     # echo -e "${WARN}Generate MySQL root password.${NORMAL}"
