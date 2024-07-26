@@ -40,10 +40,10 @@ function setup() {
     #     fi
     # else
     if [[ ! -f docker-compose.yml ]]; then
-        if [[ ! -z $s3_enable ]] && [[ -z $runner_enable ]] && [[ $(echo "$s3_enable" | $(which tr) '[:lower:]' '[:upper:]') = "TRUE" ]]; then
-            $(which wget) -O docker-compose.yml https://raw.githubusercontent.com/mindevis/scripts/main/composes/gitlab/gitlab-with-s3.yml
+        if [[ -z $git_https_port ]];then
+            $(which wget) -O docker-compose.yml https://raw.githubusercontent.com/mindevis/scripts/main/composes/gitea/gitea_with_http.yml
         else
-            $(which wget) -O docker-compose.yml https://raw.githubusercontent.com/mindevis/scripts/main/composes/gitea/gitea.yml
+            $(which wget) -O docker-compose.yml https://raw.githubusercontent.com/mindevis/scripts/main/composes/gitea/gitea_with_https.yml
         fi
     fi
     # fi
@@ -66,20 +66,9 @@ function setup() {
     $(which sed) -i "s/IMG/$package\/$package:latest/g" docker-compose.yml
     $(which sed) -i "s/DOMAIN/$domain/g" docker-compose.yml
     $(which sed) -i "s/GSSHPORT/$git_ssh_port/g" docker-compose.yml
-    $(which sed) -i "s/GHTTPPORT/$git_http_port:80/g" docker-compose.yml
-    if [[ -z $git_https_port ]];then
-        $(which sed) -i "/- \'GHTTPSPORT\'/d" docker-compose.yml
-    else
+    $(which sed) -i "s/GHTTPPORT/$git_http_port:3000/g" docker-compose.yml
+    if [[ ! -z $git_https_port ]];then
         $(which sed) -i "s/GHTTPSPORT/$git_https_port:443/g" docker-compose.yml
-    fi
-
-    if [[ ! -z $s3_enable ]] && [[ -z $runner_enable ]] && [[ $(echo "$s3_enable" | $(which tr) '[:lower:]' '[:upper:]') = "TRUE" ]]; then
-        s3_user=$(echo -e "usr_$($OPENSSL rand -hex 4)")
-        s3_passwd=$($OPENSSL rand -hex 16)
-        $(which sed) -i "s/S3USER/$s3_user/g" docker-compose.yml
-        $(which sed) -i "s/S3PASSWD/$s3_passwd/g" docker-compose.yml
-        $(which sed) -i "s/S3WEBPORT/$s3_web_port/g" docker-compose.yml
-        $(which sed) -i "s/S3CONSOLEPORT/$s3_console_port/g" docker-compose.yml
     fi
 
     # echo -e "${WARN}Change default MySQL exposed port.${NORMAL}"

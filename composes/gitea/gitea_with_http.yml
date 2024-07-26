@@ -1,0 +1,35 @@
+services:
+  PACKAGE:
+      image: IMG
+      container_name: PACKAGE
+      hostname: DOMAIN
+      restart: always
+      environment:
+        - USER_UID=1000
+        - USER_GID=1000
+      ports:
+        - 'GHTTPPORT'
+        - 'GSSHPORT:22'
+      volumes:
+        - PACKAGE_data:/var/opt/gitlab
+        - /etc/timezone:/etc/timezone:ro
+        - /etc/localtime:/etc/localtime:ro
+      shm_size: '256m'
+      networks:
+        PACKAGE-network:
+          ipv4_address: CONT1
+
+volumes:
+  PACKAGE_data:
+    external: false
+
+networks:
+  PACKAGE-network:
+    name: PACKAGE-network
+    enable_ipv6: false
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: CIDR
+          gateway: GW
