@@ -80,6 +80,7 @@ function setup() {
         $(which sed) -i "s/MYSQLUSER/$MYSQL_USER/g" docker-compose.yml
         echo -e "${WARN}Generate MySQL user password.${NORMAL}"
         $(which sed) -i "s/MYSQLPASSWORD/$MYSQL_PASSWORD/g" docker-compose.yml
+        $(which sed) -i "s/CONT2/$networkMainOctet.3/g" docker-compose.yml
     else
         $(which sed) -i "s/PACKAGE//g" manage.sh
         $(which sed) -i "s/db-data//g" manage.sh
@@ -88,7 +89,6 @@ function setup() {
     $(which sed) -i "s/CIDR/$networkWithoutMask\/$networkMask/g" docker-compose.yml
     $(which sed) -i "s/GW/$networkMainOctet.1/g" docker-compose.yml
     $(which sed) -i "s/CONT1/$networkMainOctet.2/g" docker-compose.yml
-    $(which sed) -i "s/CONT2/$networkMainOctet.3/g" docker-compose.yml
 
     echo -e "${WARN}Start Gitea environment.${NORMAL}"
     $(which docker) compose up -d

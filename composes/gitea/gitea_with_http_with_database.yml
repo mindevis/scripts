@@ -42,13 +42,15 @@ services:
       - "db-data:/var/lib/mysql"
     networks:
       gitea-network:
-        ipv4_address: DBNW
+        ipv4_address: CONT2
 
 volumes:
   gitea_data:
+    name: "gitea_data"
     external: false
   db-data:
     name: "db-data"
+    external: false
 
 networks:
   gitea-network:
