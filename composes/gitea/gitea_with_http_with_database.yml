@@ -11,7 +11,7 @@ services:
         - 'GHTTPPORT'
         - 'GSSHPORT:22'
         - GITEA__database__DB_TYPE=mysql
-        - GITEA__database__HOST=db:3306
+        - GITEA__database__HOST=3306
         - GITEA__database__NAME=MYSQLDATABASE
         - GITEA__database__USER=MYSQLUSER
         - GITEA__database__PASSWD=MYSQLPASSWORD
@@ -20,9 +20,13 @@ services:
         - /etc/timezone:/etc/timezone:ro
         - /etc/localtime:/etc/localtime:ro
       shm_size: '256m'
+      links:
+        - "db"
       networks:
         gitea-network:
           ipv4_address: CONT1
+      depends_on:
+        - db
   
   db:
     image: PACKAGE:MYSQLVERSION
