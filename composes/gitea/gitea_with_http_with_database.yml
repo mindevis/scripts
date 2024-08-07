@@ -18,6 +18,26 @@ services:
       networks:
         gitea-network:
           ipv4_address: CONT1
+  
+  db:
+    image: PACKAGE:MYSQLVERSION
+    container_name: db
+    hostname: db
+    command: --innodb_strict_mode=0 --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci --default_authentication_plugin=mysql_native_password
+    ports:
+      - 'MYSQLPORT:3306'
+    environment:
+      - MYSQL_ROOT_PASSWORD=MYSQLROOTPASSWORD
+      - MYSQL_DATABASE=MYSQLDATABASE
+      - MYSQL_USER=MYSQLUSER
+      - MYSQL_PASSWORD=MYSQLPASSWORD
+      - TZ=Europe/Minsk
+    restart: always
+    volumes:
+      - "db-data:/var/lib/mysql"
+    networks:
+      mysql-network:
+        ipv4_address: DBNW
 
 volumes:
   gitea_data:

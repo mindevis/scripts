@@ -1,7 +1,7 @@
 services:
-  PACKAGE:
-      image: IMG
-      container_name: PACKAGE
+  gitea:
+      image: gitea/gitea:latest
+      container_name: gitea
       hostname: DOMAIN
       restart: always
       environment:
@@ -12,21 +12,21 @@ services:
         - 'GHTTPSPORT'
         - 'GSSHPORT:22'
       volumes:
-        - PACKAGE_data:/var/opt/gitlab
+        - gitea_data:/var/opt/gitlab
         - /etc/timezone:/etc/timezone:ro
         - /etc/localtime:/etc/localtime:ro
       shm_size: '256m'
       networks:
-        PACKAGE-network:
+        gitea-network:
           ipv4_address: CONT1
 
 volumes:
-  PACKAGE_data:
+  gitea_data:
     external: false
 
 networks:
-  PACKAGE-network:
-    name: PACKAGE-network
+  gitea-network:
+    name: gitea-network
     enable_ipv6: false
     driver: bridge
     ipam:

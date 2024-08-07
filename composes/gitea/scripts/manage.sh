@@ -28,9 +28,9 @@ function restart() {
 function destroy() {
     echo -e "${WARN}Destroy Gitea environment.${NORMAL}"
     $(which docker) compose -f docker-compose.yml down
-    $(which docker) volume rm --force gitea_data
+    $(which docker) volume rm --force gitea_data db-data
     $(which docker) volume prune --force
-    $(which docker) rmi PACKAGE
+    $(which docker) rmi gitea/gitea:latest PACKAGE
     exit 0
 }
 

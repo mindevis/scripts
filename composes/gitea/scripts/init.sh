@@ -20,25 +20,12 @@ LOCK_FILE="/tmp/setup.lock"
 
 function setup() {
     OPENSSL=$(which openssl)
-    # ATL_PORT=$atlPort
-    # MYSQL_ROOT_PASSWORD=$($OPENSSL rand -hex 16)
-    # PG_DATABASE=$(echo -e "db_$($OPENSSL rand -hex 4)")
-    # PG_USER=$(echo -e "usr_$($OPENSSL rand -hex 4)")
-    # PG_PASSWORD=$($OPENSSL rand -hex 16)
+    MYSQL_PORT=$mysqlPort
+    MYSQL_ROOT_PASSWORD=$($OPENSSL rand -hex 16)
+    MYSQL_DATABASE=$(echo -e "db_$($OPENSSL rand -hex 4)")
+    MYSQL_USER=$(echo -e "usr_$($OPENSSL rand -hex 4)")
+    MYSQL_PASSWORD=$($OPENSSL rand -hex 16)
 
-    # if [[ ! -d agent ]]; then 
-    #      $(which mkdir) agent
-    # fi
-
-    # if [[ ! -f agent/atlassian-agent.bak ]]; then
-    #    $(which wget) -O agent/atlassian-agent.bak https://github.com/mindevis/scripts/raw/main/composes/atlassian/agent/atlassian-agent.bak
-    # fi
-
-    # if [[ $(echo "$pgEnable" | $(which tr) '[:lower:]' '[:upper:]') = "TRUE" ]]; then
-    #     if [[ ! -f docker-compose.yml ]]; then
-    #         $(which wget) -O docker-compose.yml https://raw.githubusercontent.com/mindevis/scripts/main/composes/atlassian/jira-with-postgresql.yml
-    #     fi
-    # else
     if [[ ! -f docker-compose.yml ]]; then
         if [[ -z $git_https_port ]];then
             $(which wget) -O docker-compose.yml https://raw.githubusercontent.com/mindevis/scripts/main/composes/gitea/gitea_with_http.yml
@@ -53,17 +40,15 @@ function setup() {
         $(which chmod) +x manage.sh
     fi
 
-    # if [[ $package = "percona" ]];then
-    #     mysqlVersion="ps-$mysqlVersion"
-    # fi
+    if [[ $database = "percona" ]];then
+        mysqlVersion="ps-$mysqlVersion"
+    fi
 
     echo -e "${WARN}Initialization Gitea configuration${NORMAL}"
     echo -e "${WARN}Backup Gitea configuration file.${NORMAL}"
     $(which cp) docker-compose.yml{,.bak}
 
-    echo -e "${WARN}Setup ${package}.${NORMAL}"
-    $(which sed) -i "s/PACKAGE/$package/g" docker-compose.yml
-    $(which sed) -i "s/IMG/$package\/$package:latest/g" docker-compose.yml
+    echo -e "${WARN}Setup Gitea.${NORMAL}"
     $(which sed) -i "s/DOMAIN/$domain/g" docker-compose.yml
     $(which sed) -i "s/GSSHPORT/$git_ssh_port/g" docker-compose.yml
     $(which sed) -i "s/GHTTPPORT/$git_http_port:3000/g" docker-compose.yml
@@ -71,36 +56,28 @@ function setup() {
         $(which sed) -i "s/GHTTPSPORT/$git_https_port:443/g" docker-compose.yml
     fi
 
-    # echo -e "${WARN}Change default MySQL exposed port.${NORMAL}"
-    # $(which sed) -i "s/ATLPORT/$ATL_PORT/g" docker-compose.yml
+    echo -e "${WARN}Setup MySQL: ${mysqlVersion}.${NORMAL}"
+    $(which sed) -i "s/PACKAGE/$database/g" docker-compose.yml
+    $(which sed) -i "s/MYSQLVERSION/$mysqlVersion/g" docker-compose.yml
+    echo -e "${WARN}Change default MySQL exposed port.${NORMAL}"
+    $(which sed) -i "s/MYSQLPORT/$MYSQL_PORT/g" docker-compose.yml
+    $(which sed) -i "s/PACKAGE/$database:$mysqlVersion/g" manage.sh
 
-    # if [[ $(echo "$pmaEnable" | $(which tr) '[:lower:]' '[:upper:]') = "TRUE" ]]; then
-    #     echo -e "${WARN}Change default pgadmin exposed port.${NORMAL}"
-    #     $(which sed) -i "s/PMAPORT/$PMA_PORT/g" docker-compose.yml
-    #     $(which sed) -i "s/PACKAGE/$package:latest pgadmin:latest/g" manage.sh
-    #     $(which sed) -i "s/PMANW/$networkMainOctet.3/g" docker-compose.yml
-    # else
-    $(which sed) -i "s/PACKAGE/$package\/$package:latest/g" manage.sh
-    # fi
-
-    # echo -e "${WARN}Generate MySQL root password.${NORMAL}"
-    # $(which sed) -i "s/MYSQLROOTPASSWORD/$MYSQL_ROOT_PASSWORD/g" docker-compose.yml
-    # echo -e "${WARN}Generate MySQL database.${NORMAL}"
-    # $(which sed) -i "s/PGDATABASE/$PG_DATABASE/g" docker-compose.yml
-    # echo -e "${WARN}Generate MySQL user.${NORMAL}"
-    # $(which sed) -i "s/PGUSER/$PG_USER/g" docker-compose.yml
-    # echo -e "${WARN}Generate MySQL user password.${NORMAL}"
-    # $(which sed) -i "s/PGPASSWORD/$PG_PASSWORD/g" docker-compose.yml
+    echo -e "${WARN}Generate MySQL root password.${NORMAL}"
+    $(which sed) -i "s/MYSQLROOTPASSWORD/$MYSQL_ROOT_PASSWORD/g" docker-compose.yml
+    echo -e "${WARN}Generate MySQL database.${NORMAL}"
+    $(which sed) -i "s/MYSQLDATABASE/$MYSQL_DATABASE/g" docker-compose.yml
+    echo -e "${WARN}Generate MySQL user.${NORMAL}"
+    $(which sed) -i "s/MYSQLUSER/$MYSQL_USER/g" docker-compose.yml
+    echo -e "${WARN}Generate MySQL user password.${NORMAL}"
+    $(which sed) -i "s/MYSQLPASSWORD/$MYSQL_PASSWORD/g" docker-compose.yml
 
     $(which sed) -i "s/CIDR/$networkWithoutMask\/$networkMask/g" docker-compose.yml
     $(which sed) -i "s/GW/$networkMainOctet.1/g" docker-compose.yml
     $(which sed) -i "s/CONT1/$networkMainOctet.2/g" docker-compose.yml
     $(which sed) -i "s/CONT2/$networkMainOctet.3/g" docker-compose.yml
-    if [[ ! -z $s3_enable ]] && [[ -z $runner_enable ]] && [[ $(echo "$s3_enable" | $(which tr) '[:lower:]' '[:upper:]') = "TRUE" ]]; then
-        $(which sed) -i "s/CONT3/$networkMainOctet.4/g" docker-compose.yml
-    fi
 
-    echo -e "${WARN}Start $package environment.${NORMAL}"
+    echo -e "${WARN}Start Gitea environment.${NORMAL}"
     $(which docker) compose up -d
 
     echo -e "${WARN}S3 USER: $s3_user | S3 PASSWORD: $s3_passwd.${NORMAL}"
@@ -151,8 +128,16 @@ case "$1" in
     --setup)
         count=1
         for arguments in "$@"; do
-            if [[ "$arguments" = "--package" ]]; then # gitea
-                package="$2"
+            if [[ "$arguments" = "--database" ]]; then # mariadb, percona, postgresql
+                database="$2"
+            fi
+
+            if [[ "$arguments" = "--version" ]]; then
+                mysqlVersion="$2"
+            fi
+
+            if [[ "$arguments" = "--mysql-port" ]]; then
+                mysqlPort="$2"
             fi
 
             if [[ "$arguments" = "--domain" ]]; then
@@ -171,41 +156,9 @@ case "$1" in
                 git_https_port="$2"
             fi
 
-            if [[ "$arguments" = "--with-s3" ]]; then
-                s3_enable="$2"
-            fi
-
-            if [[ "$arguments" = "--with-runner" ]]; then
-                runner_enable="$2"
-            fi  
-
-            if [[ "$arguments" = "--s3-web-port" ]]; then
-                s3_web_port="$2"
-            fi
-
-            if [[ "$arguments" = "--s3-console-port" ]]; then
-                s3_console_port="$2"
-            fi  
-
-            # if [[ "$arguments" = "--version" ]]; then
-            #     mysqlVersion="$2"
-            # fi
-
             if [[ "$arguments" = "--network" ]]; then
                 networkCIDR="$2"
             fi
-
-            # if [[ "$arguments" = "--jira-port" ]]; then
-            #     atlPort="$2"
-            # fi
-
-            # if [[ "$arguments" = "--pg-enable" ]]; then
-            #     pgEnable="$2"
-            # fi
-
-            # if [[ "$arguments" = "--pma-port" ]]; then
-            #     pmaPort="$2"
-            # fi
 
             count=$(( "$count" + 1 ))
             shift
@@ -216,15 +169,10 @@ case "$1" in
         networkWithoutMask="$(echo "$networkCIDR" | cut -d / -f1)"
         networkMainOctet="$(echo "$networkWithoutMask" | cut -d. -f-3)"
         
-        if [[ -z $package ]]; then
-            echo -e "${BAD}You have not specified all required arguments.${NORMAL}"
-            exit 1
-        elif [[ -z $runner_enable ]] || [[ $(echo "$runner_enable" | $(which tr) '[:lower:]' '[:upper:]') = "FALSE" ]] && [[ ! -z $s3_enable ]] && [[ $(echo "$s3_enable" | $(which tr) '[:lower:]' '[:upper:]') = "TRUE" ]]; then
-            if [[ -z $s3_web_port ]] || [[ -z $s3_console_port ]]; then
-                echo -e "${BAD}You have not specified all required arguments.${NORMAL}"
-                exit 1
-            fi
-        fi
+        # if [[ -z $package ]]; then
+        #     echo -e "${BAD}You have not specified all required arguments.${NORMAL}"
+        #     exit 1
+        # fi
 
         # if [[ $(echo "$pmaEnable" | $(which tr) '[:lower:]' '[:upper:]') = "TRUE" ]]; then
         #     if [[ -z $package ]] || [[ -z $mysqlVersion ]] || [[ -z $atlPort ]] || [[ -z $pmaPort ]]; then
