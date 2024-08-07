@@ -10,6 +10,11 @@ services:
       ports:
         - 'GHTTPPORT'
         - 'GSSHPORT:22'
+        - GITEA__database__DB_TYPE=mysql
+        - GITEA__database__HOST=db:3306
+        - GITEA__database__NAME=MYSQLDATABASE
+        - GITEA__database__USER=MYSQLUSER
+        - GITEA__database__PASSWD=MYSQLPASSWORD
       volumes:
         - gitea_data:/var/opt/gitlab
         - /etc/timezone:/etc/timezone:ro
@@ -36,12 +41,14 @@ services:
     volumes:
       - "db-data:/var/lib/mysql"
     networks:
-      mysql-network:
+      gitea-network:
         ipv4_address: DBNW
 
 volumes:
   gitea_data:
     external: false
+  db-data:
+    name: "db-data"
 
 networks:
   gitea-network:

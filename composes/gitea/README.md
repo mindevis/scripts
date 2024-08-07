@@ -3,13 +3,18 @@
 ```
 wget https://raw.githubusercontent.com/mindevis/scripts/main/composes/gitea/scripts/init.sh && chmod +x init.sh
 ```
-## Usage for setup Percona MySQL 5.7 without phpMyAdmin
+## Usage for setup Gitea
 ```
-bash init.sh --setup --git-ssh-port 2264 --git-http-port 80 --git-https-port 443 --domain domain.tld --database percona --version 5.7 --mysql-port 3306
+bash init.sh --setup --domain domain.tld --ssh-port 22 --http-port 80
 ```
-## Usage for setup Percona MySQL 8.0 without phpMyAdmin
+## Usage for setup Gitea with database
 ```
-bash init.sh --setup --git-ssh-port 2264 --git-http-port 80 --git-https-port 443 --domain domain.tld --database percona --version 8.0 --mysql-port 3306
+bash init.sh --setup --ssh-port 22 --http-port 80 --domain domain.tld --db mysql --db-version 5.7 --db-port 3306
+```
+### If need setup Gitea with https usage 
+```
+--ssl true
+--ssl-port 443
 ```
 ### If need setup docker network with custom CIDR usage 
 ```

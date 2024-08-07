@@ -17,23 +17,31 @@ fi
 
 LOCK_FILE="/tmp/setup.lock"
 
-
 function setup() {
     OPENSSL=$(which openssl)
-    MYSQL_PORT=$mysqlPort
-    MYSQL_ROOT_PASSWORD=$($OPENSSL rand -hex 16)
-    MYSQL_DATABASE=$(echo -e "db_$($OPENSSL rand -hex 4)")
-    MYSQL_USER=$(echo -e "usr_$($OPENSSL rand -hex 4)")
-    MYSQL_PASSWORD=$($OPENSSL rand -hex 16)
+    if [[ ! -z $database ]];then
+        MYSQL_PORT=$mysqlPort
+        MYSQL_ROOT_PASSWORD=$($OPENSSL rand -hex 16)
+        MYSQL_DATABASE=$(echo -e "db_$($OPENSSL rand -hex 4)")
+        MYSQL_USER=$(echo -e "usr_$($OPENSSL rand -hex 4)")
+        MYSQL_PASSWORD=$($OPENSSL rand -hex 16)
+    fi
 
     if [[ ! -f docker-compose.yml ]]; then
-        if [[ -z $git_https_port ]];then
-            $(which wget) -O docker-compose.yml https://raw.githubusercontent.com/mindevis/scripts/main/composes/gitea/gitea_with_http.yml
+        if [[ -z $database ]];then
+            if [[ -z $git_https_port ]];then
+                $(which wget) -O docker-compose.yml https://raw.githubusercontent.com/mindevis/scripts/main/composes/gitea/gitea_with_http.yml
+            else
+                $(which wget) -O docker-compose.yml https://raw.githubusercontent.com/mindevis/scripts/main/composes/gitea/gitea_with_https.yml
+            fi
         else
-            $(which wget) -O docker-compose.yml https://raw.githubusercontent.com/mindevis/scripts/main/composes/gitea/gitea_with_https.yml
+            if [[ -z $git_https_port ]];then
+                $(which wget) -O docker-compose.yml https://raw.githubusercontent.com/mindevis/scripts/main/composes/gitea/gitea_with_http_with_database.yml
+            else
+                $(which wget) -O docker-compose.yml https://raw.githubusercontent.com/mindevis/scripts/main/composes/gitea/gitea_with_https_with_database.yml
+            fi
         fi
     fi
-    # fi
 
     if [[ ! -f manage.sh ]]; then
         $(which wget) -O manage.sh https://raw.githubusercontent.com/mindevis/scripts/main/composes/gitea/scripts/manage.sh
@@ -53,24 +61,29 @@ function setup() {
     $(which sed) -i "s/GSSHPORT/$git_ssh_port/g" docker-compose.yml
     $(which sed) -i "s/GHTTPPORT/$git_http_port:3000/g" docker-compose.yml
     if [[ ! -z $git_https_port ]];then
-        $(which sed) -i "s/GHTTPSPORT/$git_https_port:443/g" docker-compose.yml
+        $(which sed) -i "s/GHTTPSPORT/$git_https_port:3080/g" docker-compose.yml
     fi
 
-    echo -e "${WARN}Setup MySQL: ${mysqlVersion}.${NORMAL}"
-    $(which sed) -i "s/PACKAGE/$database/g" docker-compose.yml
-    $(which sed) -i "s/MYSQLVERSION/$mysqlVersion/g" docker-compose.yml
-    echo -e "${WARN}Change default MySQL exposed port.${NORMAL}"
-    $(which sed) -i "s/MYSQLPORT/$MYSQL_PORT/g" docker-compose.yml
-    $(which sed) -i "s/PACKAGE/$database:$mysqlVersion/g" manage.sh
+    if [[ ! -z $database ]];then
+        echo -e "${WARN}Setup MySQL: ${mysqlVersion}.${NORMAL}"
+        $(which sed) -i "s/PACKAGE/$database/g" docker-compose.yml
+        $(which sed) -i "s/MYSQLVERSION/$mysqlVersion/g" docker-compose.yml
+        echo -e "${WARN}Change default MySQL exposed port.${NORMAL}"
+        $(which sed) -i "s/MYSQLPORT/$MYSQL_PORT/g" docker-compose.yml
+        $(which sed) -i "s/PACKAGE/$database:$mysqlVersion/g" manage.sh
 
-    echo -e "${WARN}Generate MySQL root password.${NORMAL}"
-    $(which sed) -i "s/MYSQLROOTPASSWORD/$MYSQL_ROOT_PASSWORD/g" docker-compose.yml
-    echo -e "${WARN}Generate MySQL database.${NORMAL}"
-    $(which sed) -i "s/MYSQLDATABASE/$MYSQL_DATABASE/g" docker-compose.yml
-    echo -e "${WARN}Generate MySQL user.${NORMAL}"
-    $(which sed) -i "s/MYSQLUSER/$MYSQL_USER/g" docker-compose.yml
-    echo -e "${WARN}Generate MySQL user password.${NORMAL}"
-    $(which sed) -i "s/MYSQLPASSWORD/$MYSQL_PASSWORD/g" docker-compose.yml
+        echo -e "${WARN}Generate MySQL root password.${NORMAL}"
+        $(which sed) -i "s/MYSQLROOTPASSWORD/$MYSQL_ROOT_PASSWORD/g" docker-compose.yml
+        echo -e "${WARN}Generate MySQL database.${NORMAL}"
+        $(which sed) -i "s/MYSQLDATABASE/$MYSQL_DATABASE/g" docker-compose.yml
+        echo -e "${WARN}Generate MySQL user.${NORMAL}"
+        $(which sed) -i "s/MYSQLUSER/$MYSQL_USER/g" docker-compose.yml
+        echo -e "${WARN}Generate MySQL user password.${NORMAL}"
+        $(which sed) -i "s/MYSQLPASSWORD/$MYSQL_PASSWORD/g" docker-compose.yml
+    else
+        $(which sed) -i "s/PACKAGE//g" manage.sh
+        $(which sed) -i "s/db-data//g" manage.sh
+    fi
 
     $(which sed) -i "s/CIDR/$networkWithoutMask\/$networkMask/g" docker-compose.yml
     $(which sed) -i "s/GW/$networkMainOctet.1/g" docker-compose.yml
@@ -79,8 +92,6 @@ function setup() {
 
     echo -e "${WARN}Start Gitea environment.${NORMAL}"
     $(which docker) compose up -d
-
-    echo -e "${WARN}S3 USER: $s3_user | S3 PASSWORD: $s3_passwd.${NORMAL}"
 
     rm -f "$LOCK_FILE"
     rm -f "$0"
@@ -122,21 +133,20 @@ function checking() {
     setup
 }
 
-
 # Entrypoint to script
 case "$1" in
     --setup)
         count=1
         for arguments in "$@"; do
-            if [[ "$arguments" = "--database" ]]; then # mariadb, percona, postgresql
+            if [[ "$arguments" = "--db" ]]; then # mariadb, percona, postgresql
                 database="$2"
             fi
 
-            if [[ "$arguments" = "--version" ]]; then
+            if [[ "$arguments" = "--db-version" ]]; then
                 mysqlVersion="$2"
             fi
 
-            if [[ "$arguments" = "--mysql-port" ]]; then
+            if [[ "$arguments" = "--db-port" ]]; then
                 mysqlPort="$2"
             fi
 
@@ -144,15 +154,19 @@ case "$1" in
                 domain="$2"
             fi
 
-            if [[ "$arguments" = "--git-ssh-port" ]]; then
+            if [[ "$arguments" = "--ssh-port" ]]; then
                 git_ssh_port="$2"
             fi
 
-            if [[ "$arguments" = "--git-http-port" ]]; then
+            if [[ "$arguments" = "--http-port" ]]; then
                 git_http_port="$2"
             fi
 
-            if [[ "$arguments" = "--git-https-port" ]]; then
+            if [[ "$arguments" = "--ssl" ]]; then
+                git_https="$2"
+            fi
+
+            if [[ "$arguments" = "--ssl-port" ]]; then
                 git_https_port="$2"
             fi
 
@@ -163,6 +177,19 @@ case "$1" in
             count=$(( "$count" + 1 ))
             shift
         done
+
+        if [[ ! -z $database ]];then
+            mysqlVersion=${mysqlVersion:-8.0}
+            mysqlPort=${mysqlPort:-3306}
+        fi
+
+        domain=${domain:-gitea.local}
+        git_ssh_port=${git_ssh_port:-22}
+        git_http_port=${git_http_port:-80}
+        
+        if [[ $(echo "$git_https" | $(which tr) '[:lower:]' '[:upper:]') = "TRUE" ]];then
+            git_https_port=${git_https_port:-443}
+        fi
 
         networkCIDR="${networkCIDR:-"10.2.26.0/24"}"
         networkMask="$(echo "$networkCIDR" | cut -d / -f2)"
