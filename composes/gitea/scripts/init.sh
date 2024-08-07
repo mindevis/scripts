@@ -69,7 +69,11 @@ function setup() {
         $(which sed) -i "s/PACKAGE/$database/g" docker-compose.yml
         $(which sed) -i "s/MYSQLVERSION/$mysqlVersion/g" docker-compose.yml
         echo -e "${WARN}Change default MySQL exposed port.${NORMAL}"
-        $(which sed) -i "s/MYSQLPORT/$MYSQL_PORT/g" docker-compose.yml
+        if [[ $(echo "$expMysqlPort" | $(which tr) '[:lower:]' '[:upper:]') = "TRUE" ]];then
+            $(which sed) -i "s/MYSQLPORT/127.0.0.1:$MYSQL_PORT:3306/g" docker-compose.yml
+        else
+            $(which sed) -i "s/MYSQLPORT/$MYSQL_PORT/g" docker-compose.yml
+        fi
         $(which sed) -i "s/PACKAGE/$database:$mysqlVersion/g" manage.sh
 
         echo -e "${WARN}Generate MySQL root password.${NORMAL}"
@@ -148,6 +152,10 @@ case "$1" in
 
             if [[ "$arguments" = "--db-port" ]]; then
                 mysqlPort="$2"
+            fi
+
+            if [[ "$arguments" = "--expose-db-port" ]]; then
+                expMysqlPort="$2"
             fi
 
             if [[ "$arguments" = "--domain" ]]; then

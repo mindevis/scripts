@@ -11,6 +11,10 @@ bash init.sh --setup --domain domain.tld --ssh-port 22 --http-port 80
 ```
 bash init.sh --setup --ssh-port 22 --http-port 80 --domain domain.tld --db mysql --db-version 5.7 --db-port 3306
 ```
+### If need expose database port in host system usage 
+```
+--expose-db-port true
+```
 ### If need setup Gitea with https usage 
 ```
 --ssl true
