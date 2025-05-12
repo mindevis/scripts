@@ -1,0 +1,30 @@
+services:
+  db:
+    image: percona/pmm-server:3
+    container_name: pmm-server
+    hostname: pmm-server
+    ports:
+      - '443:8443'
+    environment:
+      - TZ=Europe/Minsk
+    restart: always
+    volumes:
+      - "pmm-server-data:/srv"
+    networks:
+      mysql-network:
+        ipv4_address: DBNW
+
+volumes:
+  pmm-server-data:
+    name: "pmm-server-data"
+
+networks:
+  percona-network:
+    name: percona-network
+    enable_ipv6: false
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: CIDR
+          gateway: GW
