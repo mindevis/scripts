@@ -1,5 +1,5 @@
 services:
-  db:
+  pmm-server:
     image: percona/pmm-server:3
     container_name: pmm-server
     hostname: pmm-server
@@ -11,7 +11,7 @@ services:
     volumes:
       - "pmm-server-data:/srv"
     networks:
-      mysql-network:
+      percona-network:
         ipv4_address: DBNW
 
 volumes:
