@@ -1,0 +1,33 @@
+services:
+  loki-app:
+    image: grafana/loki:latest
+    container_name: loki-app
+    hostname: loki-app
+    ports:
+      - '3210:3100'
+    environment:
+      - TZ=Europe/Minsk
+    restart: always
+    volumes:
+      - "loki-app-data:/loki"
+      - "loki-app-config:/etc/loki"
+    networks:
+      loki-network:
+        ipv4_address: DBNW
+
+volumes:
+  loki-app-data:
+    name: "loki-app-data"
+  loki-app-config:
+    name: "loki-app-config"
+
+networks:
+  loki-network:
+    name: loki-network
+    enable_ipv6: false
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: CIDR
+          gateway: GW
